@@ -4,6 +4,53 @@
    =================================================================== */
 
 document.addEventListener('DOMContentLoaded', () => {
+  // ===================================================================
+  // Dynamic Career Experience Auto-Calculator (Self-Updating)
+  // ===================================================================
+  function initDynamicExperience() {
+    // Full-Time SDET at Vitra.ai started June 1, 2023
+    const VITRA_START_YEAR = 2023;
+    const VITRA_START_MONTH = 5; // 0-indexed: 5 = June
+    const INTERNSHIP_MONTHS = 6;  // Digite Infotech (NimbleWork) 6-month internship
+
+    const now = new Date();
+    const vitraMonths = (now.getFullYear() - VITRA_START_YEAR) * 12 + (now.getMonth() - VITRA_START_MONTH);
+    const totalMonths = Math.max(0, vitraMonths + INTERNSHIP_MONTHS);
+
+    const years = Math.floor(totalMonths / 12);
+    const months = totalMonths % 12;
+
+    // Years.Months format: e.g. 3.4, 3.6, 3.11, 4.0
+    const expFormatted = (months === 0) ? `${years}.0` : `${years}.${months}`;
+    const expDisplay = `${expFormatted}+`;
+    const expYearsDisplay = `${expDisplay} Years`;
+
+    const detailedTooltip = `Total Experience: ${years} Years, ${months} Months (Includes 6 months internship at Digite Infotech + full-time SDET tenure at Vitra.ai)`;
+
+    // 1. Update stats odometer card
+    const expStat = document.querySelector('[data-dynamic-exp-stat]');
+    if (expStat) {
+      expStat.setAttribute('data-target', expFormatted);
+      expStat.textContent = expDisplay;
+      expStat.setAttribute('title', detailedTooltip);
+    }
+
+    // 2. Update profile card meta value
+    const expProfile = document.querySelector('[data-dynamic-exp-profile]');
+    if (expProfile) {
+      expProfile.textContent = expYearsDisplay;
+      expProfile.setAttribute('title', detailedTooltip);
+    }
+
+    // 3. Update all inline text spans
+    const expTexts = document.querySelectorAll('.dynamic-exp-text');
+    expTexts.forEach(el => {
+      el.textContent = `${expDisplay} years`;
+    });
+  }
+
+  initDynamicExperience();
+
   // 1. Navbar scroll background effect & back-to-top visibility
   const navbar = document.querySelector('.navbar');
   const backToTopBtn = document.querySelector('.back-to-top');
@@ -161,9 +208,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (entry.isIntersecting && !animated) {
           animated = true;
           statNumbers.forEach(stat => {
-            const target = parseFloat(stat.getAttribute('data-target'));
+            const targetRaw = stat.getAttribute('data-target') || '0';
+            const target = parseFloat(targetRaw);
             const suffix = stat.getAttribute('data-suffix') || '';
-            const isFloat = target % 1 !== 0;
+            const decimalParts = targetRaw.split('.');
+            const decimalPlaces = decimalParts.length > 1 ? decimalParts[1].length : 0;
             let current = 0;
             const duration = 1400;
             const stepTime = 30;
@@ -175,8 +224,10 @@ document.addEventListener('DOMContentLoaded', () => {
               if (current >= target) {
                 current = target;
                 clearInterval(timer);
+                stat.textContent = targetRaw + suffix;
+              } else {
+                stat.textContent = (decimalPlaces > 0 ? current.toFixed(decimalPlaces) : Math.floor(current)) + suffix;
               }
-              stat.textContent = (isFloat ? current.toFixed(1) : Math.floor(current)) + suffix;
             }, stepTime);
           });
         }
