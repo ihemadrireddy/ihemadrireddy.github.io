@@ -52,9 +52,11 @@ document.addEventListener('DOMContentLoaded', () => {
   if (mobileToggle && navMenu) {
     mobileToggle.addEventListener('click', () => {
       navMenu.classList.toggle('open');
+      const isOpen = navMenu.classList.contains('open');
+      document.body.classList.toggle('nav-open', isOpen);
       const icon = mobileToggle.querySelector('i');
       if (icon) {
-        if (navMenu.classList.contains('open')) {
+        if (isOpen) {
           icon.classList.remove('fa-bars');
           icon.classList.add('fa-times');
         } else {
@@ -67,12 +69,26 @@ document.addEventListener('DOMContentLoaded', () => {
     navLinks.forEach(link => {
       link.addEventListener('click', () => {
         navMenu.classList.remove('open');
+        document.body.classList.remove('nav-open');
         const icon = mobileToggle.querySelector('i');
         if (icon) {
           icon.classList.remove('fa-times');
           icon.classList.add('fa-bars');
         }
       });
+    });
+
+    // Close mobile menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (navMenu.classList.contains('open') && !navMenu.contains(e.target) && !mobileToggle.contains(e.target)) {
+        navMenu.classList.remove('open');
+        document.body.classList.remove('nav-open');
+        const icon = mobileToggle.querySelector('i');
+        if (icon) {
+          icon.classList.remove('fa-times');
+          icon.classList.add('fa-bars');
+        }
+      }
     });
   }
 
